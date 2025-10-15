@@ -382,30 +382,36 @@
             studentEmail = document.getElementById('email').value;
             studentWhatsapp = document.getElementById('whatsapp').value;
 
-            // 2. Envia os dados para o Formspree
+            // 2. Envia os dados para o Formspree usando FormData (o Formspree lida melhor com isso)
             const submissionData = new FormData(leadForm);
             
+            // Inicia a transição para a tela de prática IMEDIATAMENTE.
+            // O Formspree fetch continua em segundo plano.
+            formView.classList.add('hidden');
+            setBodyBackground('practice-view');
+            practiceView.classList.remove('hidden');
+            startPractice(); // Inicia a interface de prática
+
             fetch(leadForm.action, {
                 method: 'POST',
+                // Usamos o FormData diretamente, o que é mais robusto para CORS em alguns ambientes.
+                // O Content-Type é definido automaticamente pelo FormData se não definirmos.
                 body: submissionData,
-                headers: { 'Accept': 'application/json' }
+                headers: { 
+                    'Accept': 'application/json' 
+                    // Removendo o Content-Type para permitir que FormData o defina corretamente com boundary.
+                }
             }).then(response => {
                 if (response.ok) {
                     console.log("Dados do lead enviados com sucesso para o Formspree.");
                 } else {
                     // MUDANÇA AQUI: Mostra o status do erro HTTP
-                    console.error(`Houve um problema ao enviar o lead para o Formspree. Status: ${response.status} (${response.statusText})`);
+                    console.error(`Houve um problema ao enviar o lead para o Formspree. Status: ${response.status} (${response.statusText}). Verifique a ativação do formulário Formspree.`);
                 }
             }).catch(error => {
                 // MUDANÇA AQUI: Mensagem de erro de rede
                 console.error("Erro de conexão ou rede ao enviar o lead:", error);
             });
-
-            // 3. Transição para a tela de prática (Esta ação é intencionalmente não bloqueada pela chamada da API)
-            formView.classList.add('hidden');
-            setBodyBackground('practice-view');
-            practiceView.classList.remove('hidden');
-            startPractice(); // Inicia a interface de prática
         });
 
         // --- INICIA O FLUXO NO PRIMEIRO SPLASH SCREEN ---
