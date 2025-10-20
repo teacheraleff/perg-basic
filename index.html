@@ -1,14 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SLAP | Prática de Conversação Básica</title>
-    <!-- Favicon da SLAP -->
+    <title>SLAP | ACC Panel</title>
+    <!-- SLAP Favicon -->
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dqfi22uz0/image/upload/v1749543469/SLAP_FAVICON_AMARELO_coilvj.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     
     <!-- Google Fonts: DM Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,406 +15,637 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Aplicando a fonte padrão e cores */
-        html, body {
-            height: 100%;
-            overflow-x: hidden;
-            transition: background-color 0.4s ease;
+        :root {
+            --slap-yellow: #F1D24B;
+            --slap-blue: #84C7DF;
+            --slap-purple: #8671d1;
+            --slap-red-primary: #FF5C3D;
+            --slap-stone-800: #292524;
+            --slap-stone-100: #f5f5f4;
         }
+
         body {
             font-family: 'DM Sans', sans-serif;
-            display: flex;
-            flex-direction: column;
-            /* Cor de fundo padrão (será sobrescrita pelo JS/classes) */
-            background-color: #1c1917; /* stone-900 (Fundo inicial escuro) */
-            color: #f5f5f4; /* stone-100 (Cor inicial do texto) */
-            overflow-y: auto; 
-        }
-
-        /* Classes dinâmicas para mudar o fundo no JS */
-        .bg-dark { background-color: #1c1917; color: #f5f5f4; }
-        .bg-yellow { background-color: #F1D24B; color: #44403c; }
-        .bg-white-practice { background-color: white; color: #44403c; }
-        
-        main {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 1rem 1rem;
-            width: 100%;
-        }
-
-        .screen-view {
-            width: 100%; 
-            max-width: 48rem; /* Limita a largura do conteúdo para desktop */
-            text-align: center;
-            padding: 1.5rem 0;
-            height: auto;
-        }
-
-        .dark-splash {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            background-color: #f4f7f9;
         }
         
+        #main-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
         .action-button {
-             background-color: #F1D24B; 
-             color: #44403c; /* stone-800 */
-             border: none; 
+             background-color: var(--slap-yellow); 
+             color: var(--slap-stone-800);
              padding: 0.75rem 1.5rem; 
-             border-radius: 9999px; 
+             border-radius: 0.75rem; 
              font-weight: 700; 
-             cursor: pointer; 
-             transition: background-color 0.2s, transform 0.2s;
-             display: inline-flex;
-             align-items: center;
-             gap: 0.5rem;
-             text-decoration: none;
+             transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .action-button:hover:not(:disabled) {
-            background-color: #eab308; /* Darker yellow */
+            background-color: #eab308;
             transform: translateY(-2px);
         }
-        .action-button:disabled {
-            background-color: #a8a29e; /* stone-400 */
-            cursor: not-allowed;
+        
+        .secondary-button {
+            background-color: var(--slap-stone-800);
+            color: white;
+            padding: 0.75rem 1.5rem; 
+            border-radius: 0.75rem; 
+            font-weight: 500; 
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .secondary-button:hover:not(:disabled) {
+            background-color: #292524;
+            transform: translateY(-1px);
+        }
+
+        .subtle-button {
+            background-color: #f4f4f5; /* stone-100 */
+            color: #3f3f46; /* stone-700 */
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            display: inline-block;
+        }
+        .subtle-button:hover {
+            background-color: #e5e5e5; /* stone-200 */
+        }
+
+        .game-view-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
         }
         
-        /* Estilos do formulário para manter a estética */
-        .fill-in-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background-color: #f5f5f4; /* stone-100 */
-            border: 2px solid #e7e5e4; /* stone-200 */
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            color: #44403c;
-            transition: border-color 0.2s;
+        .module-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            cursor: pointer;
+            position: relative; /* Adicionado para posicionamento absoluto do filho */
         }
-        .fill-in-input:focus {
-            outline: none;
-            border-color: #F1D24B;
+        .module-card:hover {
+            transform: scale(1.02); 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            border-color: var(--slap-purple);
+        }
+
+        #login-gate {
+            background-color: var(--slap-stone-800);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .login-card {
+            background-color: white;
+            color: var(--slap-stone-800);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        /* Ranking Game Drag & Drop Style */
+        .ranking-item.dragging {
+            opacity: 0.5;
+            background-color: #e0f2fe;
+        }
+
+        /* Two Truths & One Lie Button Style */
+        .status-button {
+            width: 7rem; /* Fixed width */
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* NEW styles for improved in-game visuals */
+        .game-statement-box {
+            padding: 2rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .game-statement-text {
+            font-size: 1.75rem; /* text-2xl */
+            font-weight: 500;
+            color: var(--slap-stone-800);
+            line-height: 1.4;
+        }
+
+        .dilemma-box {
+            padding: 2rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .ranking-item-styled {
+            padding: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: grab;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        #instructions-modal {
+            transition: opacity 0.3s ease-in-out;
         }
 
     </style>
 </head>
-<body class="bg-dark text-stone-100">
-
-    <main id="app-container">
-        <!-- Contêiner principal para centralizar e limitar o conteúdo no desktop -->
-        <div class="w-full max-w-7xl mx-auto">
-        
-            <!-- SPLASH SCREEN 1: READY QUESTION -->
-            <div id="splash-1-view" class="dark-splash screen-view mx-auto md:max-w-xl">
-                <img src="https://res.cloudinary.com/dqfi22uz0/image/upload/v1749349751/DBB440C2-684E-4DCF-9CD3-B2DDC18F1E53_3_vgocga.jpg" alt="SLAP Logo" class="w-32 h-auto mx-auto mb-4 sm:mb-6 rounded-lg">
-                <h1 class="text-4xl sm:text-5xl font-bold text-[#F1D24B] mb-4 sm:mb-6">
-                    Você consegue responder 100% em inglês?
-                </h1>
-                <!-- ALTERAÇÃO AQUI: VAI DIRETO PARA O FORMULÁRIO -->
-                <button class="action-button bg-[#F1D24B] text-stone-900 text-xl px-12 py-4" onclick="goToForm()">
-                    Pode mandar!
+<body>
+    
+    <!-- LOGIN GATE -->
+    <div id="login-gate">
+        <div class="login-card text-center">
+            <h1 class="text-3xl font-bold mb-4 text-[var(--slap-purple)]">SLAP ACC Panel</h1>
+            <p class="text-lg font-medium mb-6">To enter, guess the series I'm thinking of:</p>
+            
+            <form id="login-form" onsubmit="event.preventDefault(); window.checkPassword();">
+                <input 
+                    type="password" 
+                    id="password-input" 
+                    class="w-full p-3 border-2 border-stone-200 rounded-lg my-4 text-center" 
+                    placeholder="ex: the boys" 
+                    required
+                >
+                <button type="submit" class="action-button w-full">
+                    Access Panel
                 </button>
+                <p id="login-feedback" class="mt-4 text-red-600 hidden font-bold">Incorrect series. Try again!</p>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-wrapper" class="hidden">
+        
+        <!-- HEADER -->
+        <header class="py-6 border-b border-stone-200 mb-8">
+            <img src="https://res.cloudinary.com/dqfi22uz0/image/upload/v1759294967/SLAP_TIPO_PRETO_2_kismg9.png" alt="SLAP Logo Preto" class="w-32 h-auto mx-auto mb-2">
+            <h1 class="text-3xl font-bold text-center text-stone-800">SLAP ACC Panel</h1>
+            <p class="text-center text-stone-500">Advanced Conversation Games</p>
+        </header>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboard-view" class="w-full">
+            <h2 class="text-xl font-semibold text-stone-700 mb-6 text-center sm:text-left">Select a Conversation Module:</h2>
+            <div id="module-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <!-- Cards will be injected here by JS -->
             </div>
+        </div>
 
-            <!-- SPLASH SCREEN 2: REMOVIDA -->
+        <!-- GAME VIEW -->
+        <div id="game-view" class="hidden w-full">
+            <button class="secondary-button mb-6" onclick="window.showDashboard()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Dashboard
+            </button>
 
-            <!-- Passo 1: Formulário de Inscrição (Fundo Amarelo) -->
-            <div id="form-view" class="screen-view hidden flex justify-center w-full mx-auto">
-                <!-- Conteúdo do Formulário -->
-                <div class="text-stone-800 p-6 sm:p-8 rounded-xl text-center w-full md:max-w-lg">
-                    <!-- Ícone Original (Fundo Amarelo) - rounded-lg ATIVO -->
-                    <img src="https://res.cloudinary.com/dqfi22uz0/image/upload/v1749349751/DBB440C2-684E-4DCF-9CD3-B2DDC18F1E53_3_vgocga.jpg" alt="SLAP Logo" class="w-32 h-auto mx-auto mb-4 rounded-lg">
-                    <h1 class="text-3xl font-bold text-stone-900">Gerador de Perguntas</h1>
-                    <p class="text-stone-700 mt-2 mb-6">Preencha seus dados para iniciar a prática de conversação.</p>
-                    <!-- Formspree action é configurado para receber os dados -->
-                    <form id="lead-form" action="https://formspree.io/f/mblyowaq" method="POST" class="text-left space-y-4 max-w-sm mx-auto">
-                        <div>
-                            <label for="name" class="font-semibold text-stone-800 block mb-1">Nome Completo</label>
-                            <input type="text" id="name" name="name" class="w-full px-4 py-2 bg-yellow-50 border-2 border-transparent rounded-lg focus:outline-none focus:border-stone-800 text-stone-900 placeholder-stone-500" required>
-                        </div>
-                        <div>
-                            <label for="email" class="font-semibold text-stone-800 block mb-1">E-mail</label>
-                            <input type="email" id="email" name="email" class="w-full px-4 py-2 bg-yellow-50 border-2 border-transparent rounded-lg focus:outline-none focus:border-stone-800 text-stone-900 placeholder-stone-500" required>
-                        </div>
-                        <div>
-                            <label for="whatsapp" class="font-semibold text-stone-800 block mb-1">WhatsApp (com DDD)</label>
-                            <input type="tel" id="whatsapp" name="whatsapp" class="w-full px-4 py-2 bg-yellow-50 border-2 border-transparent rounded-lg focus:outline-none focus:border-stone-800 text-stone-900 placeholder-stone-500" placeholder="(XX) XXXXX-XXXX" required>
-                        </div>
-                        <div class="text-center pt-4">
-                            <button id="submit-lead-btn" type="submit" class="action-button w-full sm:w-auto justify-center bg-stone-800 text-white hover:bg-stone-900">
-                                Começar a Prática
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </button>
-                        </div>
-                    </form>
+            <div class="game-view-container">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-3xl font-bold text-stone-800">
+                        <span id="current-module-display"></span>
+                    </h2>
+                    <button onclick="window.openInstructionsModal()" title="How to play" class="text-stone-400 hover:text-stone-600 p-2 rounded-full hover:bg-stone-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                    </button>
+                </div>
+                <div id="game-content" class="mt-8">
+                    <!-- Game content injected here -->
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Passo 2: Tela de Prática Conversacional (Fundo Branco) -->
-            <div id="practice-view" class="screen-view hidden mx-auto md:max-w-3xl">
-                 <div class="p-6 sm:p-8 w-full text-stone-800">
-                    <div class="text-center mb-8">
-                        <!-- Ícone para Fundo Branco -->
-                        <img src="https://res.cloudinary.com/dqfi22uz0/image/upload/v1759294967/SLAP_TIPO_PRETO_2_kismg9.png" alt="SLAP Logo Preto" class="w-32 h-auto mx-auto mb-4">
-                        <!-- Título e subtítulo removidos -->
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative">
+            <button onclick="window.closeInstructionsModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 id="modal-title" class="text-2xl font-bold text-stone-800 mb-4">How to Play</h3>
+            <p id="modal-content" class="text-stone-600"></p>
+        </div>
+    </div>
+    
+<script>
+    // --- STATE & CONFIG ---
+    let currentModuleKey = null;
+    let shuffledData = [];
+    let currentIndex = 0;
+    let timerInterval = null;
+    let timeLeft = 60;
+    const PASSWORD = "the boys";
+    let audioContextStarted = false;
+    let clickSound;
+
+    // --- SOUND HANDLING ---
+    function initializeAudio() {
+        if (audioContextStarted) return;
+        Tone.start();
+        clickSound = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_child.mp3").toDestination();
+        audioContextStarted = true;
+    }
+
+    function playClickSound() {
+        if (audioContextStarted && clickSound && clickSound.loaded) {
+            clickSound.start();
+        }
+    }
+
+    // --- DATA ---
+    const gameModules = {
+        hotTakes: {
+            title: "Hot Takes",
+            description: "Debate controversial statements. Focus on argument structure.",
+            color: 'var(--slap-red-primary)',
+            instructions: "Read the controversial statement aloud. Encourage students to form an opinion and defend it with at least two arguments. The goal is to practice argumentation, agreement, and disagreement.",
+            data: [
+                "Social media has done more harm than good.", "AI will eventually replace most creative jobs.", "Pineapple belongs on pizza.", "Remote work is less productive than office work.", "Superhero movies are overrated.", "Audiobooks are not 'real' reading.", "Tipping culture should be abolished worldwide.", "New Year's resolutions are a waste of time.", "Celebrities have no right to privacy.", "Board games are more engaging than video games.", "A four-day work week is the future.", "The customer is not always right.", "Formal education stifles true creativity.", "Astrology has some scientific basis.", "Breakfast is not the most important meal of the day.", "Zoos are unethical and should be closed.", "Voting should be mandatory in all democracies.", "Billionaires shouldn't exist.", "Cats are better pets than dogs.", "It's better to be a jack of all trades than a master of one.", "Cancel culture is a necessary tool for social justice.", "E-books are superior to physical books.", "Traditional news media is no longer trustworthy.", "Video games should be considered a professional sport.", "Self-driving cars will be safer than human drivers.", "Homework should be banned in primary schools.", "Talent is more important than hard work for success.", "Space exploration is a waste of money that should be used on Earth.", "Cereal is a soup.", "Marriage is an outdated institution.", "All drugs should be legalized.", "Procrastination can be a good thing.", "Privacy is dead and we should just accept it.", "The world is generally getting worse, not better.", "It's okay to lie to protect someone's feelings.", "Fashion is a trivial and wasteful pursuit.", "Free will is an illusion.", "Humanity is naturally selfish, not good.", "It is impossible for humans to truly multitask.", "Aliens have definitely visited Earth.", "Classical music is boring.", "Reality TV is a valuable form of social commentary.", "It's better to be brutally honest than to tell a white lie.", "The monarchy should be abolished globally.", "A universal basic income would solve poverty.", "Life was better before the internet.", "History is not important for modern life.", "Being an influencer is a legitimate career.", "It's acceptable to recline your seat on an airplane without asking.", "Ghosts are real."
+            ]
+        },
+        wouldYouRather: {
+            title: "Would You Rather?",
+            description: "Dilemmas to justify choices. Practice conditional language.",
+            color: 'var(--slap-yellow)',
+            instructions: "Present the two options on the screen. Each student must choose one and justify their choice using conditional language (e.g., 'I would choose X because...'). Encourage them to debate the pros and cons of each option.",
+            data: [
+                { a: "be able to fly", b: "be able to turn invisible" }, { a: "have more time", b: "have more money" }, { a: "live in the past", b: "live in the future" }, { a: "be able to speak all languages", b: "be able to talk to animals" }, { a: "have a personal chef", b: "have a personal driver for life" }, { a: "end world hunger", b: "end all global conflicts" }, { a: "live without music", b: "live without movies" }, { a: "know the exact date of your death", b: "know the exact cause of your death" }, { a: "be the smartest person in the world", b: "be the funniest person in the world" }, { a: "explore deep space", b: "explore the deep ocean" }, { a: "have a rewind button for your life", b: "have a pause button for your life" }, { a: "work a job you hate for high pay", b: "work a job you love for low pay" }, { a: "give up coffee forever", b: "give up your smartphone for a year" }, { a: "be able to teleport anywhere", b: "be able to read minds" }, { a: "lose your sense of taste", b: "lose your sense of smell" }, { a: "be an amazing cook", b: "be an amazing dancer" }, { a: "have a photographic memory", b: "be able to forget anything you want" }, { a: "be able to breathe underwater", b: "have the strength of ten people" }, { a: "be constantly 10 minutes late", b: "be constantly 20 minutes early" }, { a: "live one life that lasts 1000 years", b: "live 10 lives that last 100 years each" }, { a: "find your true love", b: "win the lottery" }, { a: "be able to change one decision from your past", b: "be able to see one event in your future" }, { a: "be poor but help many people", b: "be rich but help no one" }, { a: "never have to work again", b: "never have to sleep again" }, { a: "be able to control fire", b: "be able to control water" }, { a: "be famous but have no privacy", b: "be unknown but have total privacy" }, { a: "only be able to whisper", b: "only be able to shout" }, { a: "live in a world without art", b: "live in a world without science" }, { a: "have a magic carpet", b: "have a magic wand" }, { a: "always know when someone is lying", b: "always get away with lying" }, { a: "be able to talk to ghosts", b: "be able to see the future" }, { a: "have unlimited knowledge", b: "have unlimited wealth" }, { a: "be a hero who is hated", b: "be a villain who is loved" }, { a: "never be stuck in traffic again", b: "never get a cold again" }, { a: "be a master of every musical instrument", b: "be a master of every sport" }, { a: "live in a house in the mountains", b: "live in a house by the beach" }, { a: "be able to control the weather", b: "be able to control technology" }, { a: "have all your clothes be one color", b: "have to wear a different hat every day" }, { a: "go on a vacation to the moon", b: "go on a vacation to the bottom of the sea" }, { a: "have a tail", b: "have wings" }, { a: "be a famous movie star", b: "be a famous author" }, { a: "have a perfect memory of everything", b: "be able to instantly learn any skill" }, { a: "be able to talk to your past self", b: "be able to talk to your future self" }, { a: "have the power of persuasion", b: "have the power of super-intelligence" }, { a: "give up your favorite food forever", b: "give up your favorite music forever" }, { a: "have unlimited sushi for life", b: "have unlimited tacos for life" }, { a: "live in a world with no weekends", b: "live in a world with no holidays" }, { a: "fight one horse-sized duck", b: "fight one hundred duck-sized horses" }, { a: "have fingers for toes", b: "have toes for fingers" }, { a: "always have a full phone battery", b: "always have a full tank of gas" }
+            ]
+        },
+        rankingGame: {
+            title: "Ranking Game",
+            description: "Prioritize items with drag-and-drop. Focus on consensus.",
+            color: 'var(--slap-blue)',
+            instructions: "Read the topic and the items to be ranked. As a group, students must negotiate and agree on a final order. Use the drag-and-drop feature to reorder the items in real-time as they discuss. The main objective is to practice the language of negotiation and consensus-building.",
+            data: [
+                { title: "Most important qualities in a friend", items: ["Honesty", "Loyalty", "Sense of Humor", "Reliability"] }, { title: "Most essential apps on a smartphone", items: ["Messaging App", "Banking App", "Maps/Navigation", "Email"] }, { title: "Most important daily habits", items: ["Exercise", "Reading", "Meditation", "Healthy Eating"] }, { title: "Best movie genres", items: ["Comedy", "Sci-Fi", "Thriller", "Drama"] }, { title: "Most effective ways to learn a new language", items: ["Immersion", "Classes", "Apps", "Watching media"] }, { title: "Best types of vacation", items: ["Beach resort", "Adventure travel", "Cultural city tour", "Relaxing countryside escape"] }, { title: "Greatest inventions of all time", items: ["The Internet", "The Printing Press", "Electricity", "The Wheel"] }, { title: "Best singers of all time", items: ["Freddie Mercury", "Aretha Franklin", "Michael Jackson", "Whitney Houston"] }, { title: "Best movie sagas", items: ["Star Wars", "The Lord of the Rings", "Harry Potter", "Marvel Cinematic Universe"] }, { title: "Most important things for a happy life", items: ["Health", "Relationships", "Purpose", "Financial Security"] }, { title: "Most pressing global issues", items: ["Climate Change", "Poverty", "Political Instability", "Public Health"] }, { title: "Most important leadership qualities", items: ["Integrity", "Vision", "Communication", "Empathy"] }, { title: "Best programming languages to learn", items: ["Python", "JavaScript", "Java", "C++"] }, { title: "Most beautiful cities in the world", items: ["Paris", "Kyoto", "Rome", "Prague"] }, { title: "Best desserts", items: ["Chocolate Cake", "Ice Cream", "Cheesecake", "Apple Pie"] }, { title: "Most useful household appliances", items: ["Microwave", "Washing Machine", "Refrigerator", "Dishwasher"] }, { title: "Best decades for music", items: ["1960s", "1970s", "1980s", "1990s"] }, { title: "Most important elements of a good movie", items: ["Strong Plot", "Good Acting", "Cinematography", "Soundtrack"] }, { title: "Best board games", items: ["Chess", "Catan", "Monopoly", "Ticket to Ride"] }, { title: "Most valuable companies", items: ["Apple", "Microsoft", "Amazon", "Google"] }, { title: "Best social media platforms", items: ["Instagram", "TikTok", "X (Twitter)", "LinkedIn"] }, { title: "Most significant historical events", items: ["World War II", "The Renaissance", "The Industrial Revolution", "The Moon Landing"] }, { title: "Best holiday destinations", items: ["Maldives", "Italy", "Japan", "New Zealand"] }, { title: "Most important things to have in a car", items: ["Spare Tire", "First-Aid Kit", "Phone Charger", "GPS"] }, { title: "Best breakfast foods", items: ["Eggs", "Pancakes", "Cereal", "Fruit"] }, { title: "Most iconic landmarks", items: ["Eiffel Tower", "Great Wall of China", "Statue of Liberty", "Pyramids of Giza"] }, { title: "Best ways to relax", items: ["Listening to music", "Taking a bath", "Reading a book", "Watching a movie"] }, { title: "Most influential tech innovators", items: ["Steve Jobs", "Bill Gates", "Elon Musk", "Tim Berners-Lee"] }, { title: "Best fictional detectives", items: ["Sherlock Holmes", "Hercule Poirot", "Batman", "Veronica Mars"] }, { title: "Most important qualities in a car", items: ["Safety", "Fuel Efficiency", "Reliability", "Comfort"] }, { title: "Best TV shows of all time", items: ["Breaking Bad", "The Sopranos", "Game of Thrones", "Friends"] }, { title: "Most important things to teach children", items: ["Kindness", "Resilience", "Curiosity", "Honesty"] }, { title: "Best ways to be productive", items: ["Time Blocking", "The Pomodoro Technique", "Making a To-Do List", "Minimizing Distractions"] }, { title: "Most important environmental actions", items: ["Reduce, Reuse, Recycle", "Conserve Water", "Use Renewable Energy", "Reduce Carbon Footprint"] }, { title: "Best animated movies", items: ["The Lion King", "Spirited Away", "Toy Story", "Spider-Man: Into the Spider-Verse"] }, { title: "Most important aspects of a healthy relationship", items: ["Communication", "Trust", "Respect", "Shared Values"] }, { title: "Best ways to start the day", items: ["Morning Exercise", "A good breakfast", "Meditation", "Planning the day"] }, { title: "Most difficult languages to learn for English speakers", items: ["Mandarin", "Arabic", "Japanese", "Hungarian"] }, { title: "Best exercises for overall health", items: ["Swimming", "Cycling", "Running", "Yoga"] }, { title: "Most useful kitchen gadgets", items: ["Air Fryer", "Instant Pot", "Coffee Maker", "Blender"] }, { title: "Best travel companions", items: ["A good book", "A great playlist", "A close friend", "A detailed map"] }, { title: "Qualities of a good leader", items: ["Decisiveness", "Compassion", "Confidence", "Humility"] }, { title: "Most overrated tourist attractions", items: ["Leaning Tower of Pisa", "Hollywood Walk of Fame", "Times Square", "The Little Mermaid statue"] }, { title: "Best classic novels", items: ["Moby Dick", "War and Peace", "Don Quixote", "The Catcher in the Rye"] }, { title: "Most groundbreaking scientific discoveries", items: ["Penicillin", "DNA Structure", "General Relativity", "Vaccines"] }, { title: "Most influential musicians of the 21st century", items: ["Beyoncé", "Taylor Swift", "Kanye West", "Ed Sheeran"] }, { title: "Best car brands", items: ["Toyota", "Mercedes-Benz", "Ford", "Tesla"] }, { title: "Most important smartphone features", items: ["Battery Life", "Camera Quality", "Processing Speed", "Screen Size"] }, { title: "Worst household chores", items: ["Cleaning the bathroom", "Washing dishes", "Doing laundry", "Taking out the trash"] }, { title: "Best things about living in a big city", items: ["Cultural diversity", "Public transportation", "Job opportunities", "Food scene"] }
+            ]
+        },
+        justAMinute: {
+            title: "Just a Minute",
+            description: "Speak for 60 seconds without hesitation. Timer included.",
+            color: 'var(--slap-purple)',
+            instructions: "A student must speak on the presented topic for 60 seconds without hesitation, repetition of words (except common ones), or deviating from the theme. Click START to begin the timer. The PAUSE button can be used if necessary.",
+            data: [
+                "The future of transportation.", "My favorite holiday.", "The perfect meal.", "A book that changed my life.", "A skill I want to learn.", "The definition of success.", "A memory from my childhood.", "The best way to spend a rainy day.", "My opinion on artificial intelligence.", "How to stay motivated.", "The role of music in my life.", "A movie I can watch over and over again.", "The concept of happiness.", "My favorite season and why.", "The importance of friendship.", "A challenge I have overcome.", "The city I would most like to visit.", "How to make the world a better place.", "My daily routine.", "The funniest thing that ever happened to me.", "The benefits of learning a new language.", "A person I admire.", "The best advice I have ever received.", "My thoughts on fashion.", "The importance of exercise.", "A place I feel most at peace.", "The power of a good story.", "My favorite type of weather.", "How I relax after a long day.", "A historical event I find fascinating.", "The role of education in society.", "What I would do if I won the lottery.", "The perfect pet.", "My favorite hobby.", "The importance of being on time.", "A tradition in my family.", "The most beautiful place I have ever been.", "How to be a good leader.", "My thoughts on space exploration.", "The best way to learn.", "A goal I am working towards.", "The importance of laughter.", "A piece of technology I can't live without.", "How my life would be different without the internet.", "The perfect day.", "The pros and cons of social media.", "If I could have any superpower.", "My dream job.", "The meaning of art.", "A small thing that makes me happy."
+            ]
+        },
+        factOrFake: {
+            title: "Fact or Fake",
+            description: "Discuss the truth behind a statement. Practice critical thinking.",
+            color: 'var(--slap-yellow)',
+            instructions: "Read the statement and ask students to discuss whether they think it is a fact or fake, and why. After the discussion, click 'Show Answer' to reveal the truth and the explanation. This practices speculation and justification.",
+            data: [
+                { statement: "Humans use only 10% of their brains.", isFact: false, explanation: "This is a popular myth. We use virtually all of our brain all the time." }, { statement: "The Great Wall of China is visible from space.", isFact: false, explanation: "This is a common misconception. It's not visible to the naked eye from space." }, { statement: "Goldfish have a three-second memory.", isFact: false, explanation: "Studies have shown that goldfish can remember things for at least five months." }, { statement: "Shaving makes hair grow back thicker.", isFact: false, explanation: "Shaving cuts hair at a blunt angle, giving the impression of thickness, but it doesn't change the hair's texture or growth rate." }, { statement: "Lightning never strikes the same place twice.", isFact: false, explanation: "Lightning can and does strike the same place multiple times, especially tall objects." }, { statement: "Cracking your knuckles causes arthritis.", isFact: false, explanation: "There is no scientific evidence linking knuckle-cracking to arthritis." }, { statement: "Vikings wore horned helmets.", isFact: false, explanation: "There's no historical evidence for this. The image was popularized by a 19th-century opera." }, { statement: "You should drink eight glasses of water a day.", isFact: false, explanation: "Water needs vary per person. This is a general guideline, not a strict medical rule." }, { statement: "Sushi means 'raw fish'.", isFact: false, explanation: "Sushi refers to the vinegared rice. It can be served with many ingredients, not just raw fish." }, { statement: "The color red enrages bulls.", isFact: false, explanation: "Bulls are colorblind to red. They react to the movement of the matador's cape." }, { statement: "Napoleon Bonaparte was extremely short.", isFact: false, explanation: "He was about 5'7\", which was average for his time." }, { statement: "The fortune cookie is a Chinese tradition.", isFact: false, explanation: "The modern fortune cookie was invented in California." }, { statement: "Walt Disney's body is cryogenically frozen.", isFact: false, explanation: "This is an urban legend. Walt Disney was cremated." }, { statement: "Chameleons change color to blend in.", isFact: false, explanation: "They primarily change color based on mood, temperature, and communication." }, { statement: "Lemmings commit mass suicide.", isFact: false, explanation: "This myth was popularized by a staged scene in a 1958 Disney film." }, { statement: "It takes seven years to digest swallowed chewing gum.", isFact: false, explanation: "Gum passes through the digestive system at a normal rate." }, { statement: "Dogs' mouths are cleaner than humans' mouths.", isFact: false, explanation: "Both mouths contain a lot of different kinds of bacteria." }, { statement: "Carrots improve your eyesight.", isFact: false, explanation: "Carrots contain Vitamin A, but won't correct vision problems. This was WWII propaganda." }, { statement: "Albert Einstein failed math.", isFact: false, explanation: "Einstein excelled at mathematics from a young age." }, { statement: "The Sahara is the largest desert in the world.", isFact: false, explanation: "The largest desert is Antarctica (a polar desert). The Sahara is the largest hot desert." }, { statement: "Humans evolved from chimpanzees.", isFact: false, explanation: "Humans and chimpanzees share a common ancestor but evolved on different paths." }, { statement: "The 'five-second rule' is real.", isFact: false, explanation: "Bacteria can transfer to food almost instantly." }, { statement: "An apple a day keeps the doctor away.", isFact: false, explanation: "While apples are healthy, it's a proverb, not a medical fact." }, { statement: "Waking up a sleepwalker is dangerous.", isFact: false, explanation: "It is not dangerous, though they may be confused." }, { statement: "Sugar causes hyperactivity in children.", isFact: false, explanation: "Studies have debunked this. It's more likely due to the exciting environment." }, { statement: "The average person swallows spiders in their sleep.", isFact: false, explanation: "This is a myth created to show how misinformation spreads." }, { statement: "There is no gravity in space.", isFact: false, explanation: "Gravity exists everywhere. Astronauts feel 'weightless' because they are in freefall." }, { statement: "Diamonds are formed from compressed coal.", isFact: false, explanation: "Most diamonds are far older than coal and are formed in the Earth's mantle." }, { statement: "Bananas grow on trees.", isFact: false, explanation: "Bananas grow on large herbaceous flowering plants, not trees." }, { statement: "Mount Everest is the tallest mountain in the world.", isFact: true, explanation: "Measured from sea level, Mount Everest is the tallest. Mauna Kea is taller measured from its base." }, { statement: "Bats are blind.", isFact: false, explanation: "All bats can see, but most use echolocation to navigate at night." }, { statement: "A duck's quack doesn't echo.", isFact: false, explanation: "This is a widely debunked myth. A duck's quack does echo." }, { statement: "Thomas Edison invented the light bulb.", isFact: false, explanation: "He didn't invent it, but he developed the first commercially viable one." }, { statement: "Glass is a very slow-moving liquid.", isFact: false, explanation: "Glass is an amorphous solid, not a liquid. Old windows are thicker at the bottom due to old manufacturing processes." }, { statement: "Dropping a penny from a skyscraper is lethal.", isFact: false, explanation: "Due to air resistance, a penny wouldn't build up enough speed to be lethal." }, { statement: "Different parts of the tongue taste different things.", isFact: false, explanation: "All tastes can be detected by all parts of the tongue." }, { statement: "Twinkies have an infinite shelf life.", isFact: false, explanation: "They have a shelf life of about 45 days." }, { statement: "The forbidden fruit in the Bible was an apple.", isFact: false, explanation: "The Bible never specifies the type of fruit." }, { statement: "Coffee is made from beans.", isFact: false, explanation: "Coffee 'beans' are actually the pits (seeds) of a fruit called a coffee cherry." }, { statement: "The right brain is 'creative' and the left is 'logical'.", isFact: false, explanation: "This is an oversimplification. Most complex tasks require both hemispheres." }, { statement: "You lose most body heat through your head.", isFact: false, explanation: "Heat loss is proportional to the amount of exposed skin, regardless of the body part." }, { statement: "Caffeine dehydrates you.", isFact: false, explanation: "The water in caffeinated drinks typically compensates for the diuretic effect." }, { statement: "Black holes are cosmic vacuum cleaners.", isFact: false, explanation: "They have a strong gravitational pull, but you have to be very close to be pulled in." }, { statement: "Eating turkey makes you sleepy.", isFact: false, explanation: "It's the large, carbohydrate-heavy meal that causes drowsiness, not just the turkey." }, { statement: "A person can be 'double-jointed'.", isFact: false, explanation: "This term refers to hypermobility, which is unusually flexible joints, not extra joints." }, { statement: "There is a 'dark side' of the Moon.", isFact: false, explanation: "There is a 'far side' that we don't see, but it receives sunlight." }, { statement: "Water drains in opposite directions in different hemispheres due to the Coriolis effect in a sink.", isFact: false, explanation: "The Coriolis effect is too weak to affect a small body of water like in a sink; the shape of the basin determines the direction." }, { statement: "A goldfish can't live in a small bowl.", isFact: true, explanation: "Goldfish require a properly filtered tank with much more space than a small bowl to live a healthy, long life." }, { statement: "The sound of a whip cracking is a mini sonic boom.", isFact: true, explanation: "The tip of the whip moves faster than the speed of sound, creating a small sonic boom." }
+            ]
+        },
+        twoTruthsOneLie: {
+            title: "Two Truths & One Lie",
+            description: "Input three statements. The player guesses the falsehood.",
+            color: 'var(--slap-purple)',
+            instructions: "A player (teacher or student) writes three statements about themselves or a topic: two true and one false. The other players ask detailed questions to identify the lie. The goal is to practice forming questions and maintaining a coherent narrative.",
+            data: null // Input-based
+        }
+    };
+
+    // --- DOM ELEMENTS ---
+    const loginGate = document.getElementById('login-gate');
+    const mainWrapper = document.getElementById('main-wrapper');
+    const dashboardView = document.getElementById('dashboard-view');
+    const gameView = document.getElementById('game-view');
+    const cardsContainer = document.getElementById('module-cards-container');
+    const currentModuleDisplay = document.getElementById('current-module-display');
+    const gameContent = document.getElementById('game-content');
+
+    // --- CORE FUNCTIONS (Attached to window for reliability) ---
+    window.checkPassword = function() {
+        initializeAudio(); // Initialize audio on first user interaction
+        const passwordInput = document.getElementById('password-input');
+        const feedback = document.getElementById('login-feedback');
+        if (passwordInput.value.toLowerCase().trim() === PASSWORD) {
+            playClickSound();
+            loginGate.style.display = 'none';
+            mainWrapper.classList.remove('hidden');
+            window.renderModuleCards();
+        } else {
+            feedback.classList.remove('hidden');
+            passwordInput.value = '';
+        }
+    }
+
+    window.showDashboard = function() {
+        playClickSound();
+        dashboardView.classList.remove('hidden');
+        gameView.classList.add('hidden');
+        if (timerInterval) clearInterval(timerInterval);
+    }
+
+    window.renderModuleCards = function() {
+        cardsContainer.innerHTML = '';
+        for (const key in gameModules) {
+            const module = gameModules[key];
+            const card = document.createElement('div');
+            card.className = 'module-card';
+            card.onclick = () => window.openGame(key);
+            card.innerHTML = `
+                <img src="https://res.cloudinary.com/dqfi22uz0/image/upload/v1760657894/SLAP_ICON_PRETO_2_2_tv8bmp.png" alt="School Logo" class="absolute top-4 right-4 w-8 h-8 pointer-events-none" onerror="this.style.display='none';" />
+                <div>
+                    <h3 class="text-2xl font-bold text-stone-800 mb-2" style="color: ${module.color};">${module.title}</h3>
+                    <p class="text-stone-600 text-sm">${module.description}</p>
+                </div>
+                <div class="mt-4">
+                    <button class="secondary-button w-full text-sm">PLAY GAME</button>
+                </div>
+            `;
+            cardsContainer.appendChild(card);
+        }
+    }
+    
+    window.openGame = function(key) {
+        playClickSound();
+        currentModuleKey = key;
+        const module = gameModules[key];
+        shuffledData = module.data ? [...module.data].sort(() => 0.5 - Math.random()) : [];
+        currentIndex = 0;
+
+        dashboardView.classList.add('hidden');
+        gameView.classList.remove('hidden');
+        currentModuleDisplay.textContent = module.title;
+        currentModuleDisplay.style.color = module.color;
+
+        window.loadGameContent();
+    }
+
+    window.loadGameContent = function() {
+        playClickSound();
+        const module = gameModules[currentModuleKey];
+        switch (currentModuleKey) {
+            case 'hotTakes':
+            case 'wouldYouRather':
+            case 'rankingGame':
+            case 'justAMinute':
+            case 'factOrFake':
+                if (currentIndex >= shuffledData.length) {
+                    gameContent.innerHTML = `<div class="text-center"><p class="text-stone-600 text-lg">Module complete! You've seen all items.</p><button class="subtle-button mt-4" onclick="window.openGame(currentModuleKey)">Restart Module</button></div>`;
+                    return;
+                }
+                renderNextItem();
+                currentIndex++;
+                break;
+            case 'twoTruthsOneLie':
+                renderTwoTruthsOneLie();
+                break;
+        }
+    }
+
+    function renderNextItem() {
+        const item = shuffledData[currentIndex];
+        const module = gameModules[currentModuleKey];
+        let content = '';
+        let nextButtonHTML = `<div class="text-center mt-8"><button class="subtle-button" onclick="window.loadGameContent()">Next</button></div>`;
+
+        if (currentModuleKey === 'hotTakes') {
+            content = `
+                <div class="game-statement-box" style="background-color: ${module.color};">
+                    <p class="game-statement-text !text-white">${item}</p>
+                </div>
+                ${nextButtonHTML.replace('Next', 'Next Hot Take')}
+            `;
+        } else if (currentModuleKey === 'wouldYouRather') {
+            content = `
+                <div class="grid md:grid-cols-2 gap-6 items-center">
+                    <div class="dilemma-box" style="background-color: ${module.color};">
+                        <p class="text-2xl font-medium text-stone-800">${item.a}</p>
                     </div>
+                    <div class="dilemma-box" style="background-color: ${module.color};">
+                        <p class="text-2xl font-medium text-stone-800">${item.b}</p>
+                    </div>
+                </div>
+                ${nextButtonHTML.replace('Next', 'Next Dilemma')}
+            `;
+        } else if (currentModuleKey === 'rankingGame') {
+            content = `
+                <h3 class="text-2xl font-bold text-center mb-2 text-stone-700">${item.title}</h3>
+                <p class="text-center text-stone-500 mb-6">Drag to reorder. Justify your choice!</p>
+                <div id="ranking-list" class="space-y-3">
+                    ${item.items.map((subItem, i) => `
+                        <div class="ranking-item-styled" draggable="true">
+                            <span class="font-bold text-2xl" style="color:${module.color}; min-width: 2rem;">${i + 1}.</span>
+                            <span class="text-xl text-stone-700">${subItem}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ${nextButtonHTML.replace('Next', 'Next Ranking')}
+            `;
+            setTimeout(setupDragAndDrop, 0);
+        } else if (currentModuleKey === 'justAMinute') {
+            content = `
+                <div class="game-statement-box mb-6" style="background-color: ${module.color};">
+                    <p class="game-statement-text !text-white">${item}</p>
+                </div>
+                <div id="timer-display" class="text-8xl font-bold text-center my-6" style="color:${module.color};">1:00</div>
+                <div class="flex justify-center gap-4">
+                    <button class="action-button py-2 px-6" style="background-color:${module.color}; color: white;" onclick="window.startTimer()">START</button>
+                    <button class="secondary-button py-2 px-6" onclick="window.pauseTimer()">PAUSE</button>
+                </div>
+                ${nextButtonHTML.replace('Next', 'Next Topic')}
+            `;
+        } else if (currentModuleKey === 'factOrFake') {
+            content = `
+                 <div class="game-statement-box" style="background-color: ${module.color};">
+                    <p class="game-statement-text !text-stone-800">${item.statement}</p>
+                </div>
+                <div id="explanation" class="hidden mt-6 p-6 rounded-lg text-lg"></div>
+                <div class="text-center mt-8">
+                    <button id="show-answer-btn" class="action-button" style="background-color:${module.color};" onclick="window.showExplanation()">Show Answer</button>
+                    <button id="next-statement-btn" class="subtle-button hidden" onclick="window.loadGameContent()">Next Statement</button>
+                </div>
+            `;
+        }
+        gameContent.innerHTML = content;
+    }
 
-                    <div class="bg-stone-50 p-6 sm:p-8 rounded-xl shadow-xl border border-stone-200">
-                        <!-- Área da Pergunta -->
-                        <p class="text-lg font-semibold text-stone-700 mb-2">Pergunta Atual:</p>
-                        <h3 class="text-2xl sm:text-3xl font-bold mb-6 text-blue-700" id="current-question">
-                            Clique em "Gerar Pergunta" para começar!
-                        </h3>
-
-                        <!-- Botão de Resposta -->
-                        <div id="answer-toggle" class="text-center mb-4">
-                            <button id="show-answer-btn" class="action-button bg-stone-800 text-white px-6 py-3 hover:bg-stone-900" onclick="toggleAnswer(true)">
-                                Ver Possível Resposta
-                            </button>
+    function renderTwoTruthsOneLie() {
+        gameContent.innerHTML = `
+            <div class="space-y-6">
+                ${[1, 2, 3].map(i => `
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                        <textarea class="md:col-span-3 w-full p-3 border-2 border-stone-200 rounded-lg h-full" rows="4" placeholder="Statement ${i}..."></textarea>
+                        
+                        <div class="md:col-span-1 text-center">
+                            <label class="font-semibold text-stone-600 text-sm">Student's Guess</label>
+                            <div class="flex justify-center mt-2">
+                                <button class="status-button p-2 border rounded-lg bg-stone-200" onclick="window.toggleStatus(this)">NEUTRAL</button>
+                            </div>
                         </div>
                         
-                        <!-- Área da Resposta Oculta -->
-                        <div id="possible-answer-box" class="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg text-yellow-900 text-left font-semibold hidden transition duration-300">
-                            <span id="possible-answer-text"></span>
+                        <div class="md:col-span-1 text-center">
+                            <label class="font-semibold text-stone-600 text-sm">Correct Answer</label>
+                             <div class="flex justify-center mt-2">
+                                <button class="status-button p-2 border rounded-lg bg-stone-200" onclick="window.toggleStatus(this)">NEUTRAL</button>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Botão Principal de Geração -->
-                    <div class="mt-8 text-center">
-                        <button id="generate-button" class="action-button text-lg px-8 py-3 w-full sm:w-auto" onclick="displayPracticeQuestion()">
-                            Gerar Próxima Pergunta &rarr;
-                        </button>
-                    </div>
-                 </div>
+                `).join('')}
             </div>
+            <div class="text-center mt-8">
+                <button class="subtle-button" onclick="renderTwoTruthsOneLie()">Clear Fields</button>
+            </div>
+        `;
+    }
 
-            <!-- result-view removida -->
+    // --- MODAL FUNCTIONS ---
+    const instructionsModal = document.getElementById('instructions-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
 
-        </div>
-    </main>
+    window.openInstructionsModal = function() {
+        playClickSound();
+        if (currentModuleKey) {
+            const module = gameModules[currentModuleKey];
+            modalTitle.textContent = `How to Play: ${module.title}`;
+            modalContent.textContent = module.instructions;
+            instructionsModal.classList.remove('hidden');
+            instructionsModal.classList.add('flex');
+        }
+    }
+
+    window.closeInstructionsModal = function() {
+        playClickSound();
+        instructionsModal.classList.add('hidden');
+        instructionsModal.classList.remove('flex');
+    }
+
+    instructionsModal.addEventListener('click', function(event) {
+        if (event.target === instructionsModal) {
+            window.closeInstructionsModal();
+        }
+    });
+
+
+    // --- GAME SPECIFIC HELPERS ---
+    window.startTimer = function() {
+        playClickSound();
+        if (timerInterval) clearInterval(timerInterval);
+        timeLeft = 60;
+        const timerDisplay = document.getElementById('timer-display');
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            if(timerDisplay) {
+                timerDisplay.textContent = `0:${timeLeft.toString().padStart(2, '0')}`;
+            }
+            if (timeLeft <= 0) {
+                 clearInterval(timerInterval);
+            }
+        }, 1000);
+    }
+    window.pauseTimer = function() {
+        playClickSound();
+        clearInterval(timerInterval);
+    }
     
-    <!-- Áudio removido -->
+    window.showExplanation = function() {
+        playClickSound();
+        const item = shuffledData[currentIndex - 1];
+        const explanationDiv = document.getElementById('explanation');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        const nextStatementBtn = document.getElementById('next-statement-btn');
 
-    <script>
-        // --- ELEMENTOS DO DOM ---
-        const splash1View = document.getElementById('splash-1-view');
-        // splash2View removido do HTML e do JS
-        const formView = document.getElementById('form-view');
-        const practiceView = document.getElementById('practice-view'); // Novo ID
-        const leadForm = document.getElementById('lead-form');
-        
-        let studentName = '';
-        let studentEmail = '';
-        let studentWhatsapp = '';
-
-        // --- DADOS DA PRÁTICA CONVERSACIONAL (50 Perguntas) ---
-        // Perguntas e respostas básicas
-        const practiceQuestions = [
-            { question: "How do you spell your last name?", answer: "I spell it: S-M-I-T-H." },
-            { question: "Where are you from?", answer: "I'm from Rio de Janeiro, Brazil." },
-            { question: "Where do you live?", answer: "I live in São Paulo." },
-            { question: "How old are you?", answer: "I am 30 years old." },
-            { question: "When were you born?", answer: "I was born in 1995." },
-            { question: "What is your favorite color?", answer: "My favorite color is blue." },
-            { question: "Do you have any pets?", answer: "Yes, I have a cat named Whiskers." },
-            { question: "What time do you wake up?", answer: "I usually wake up at 7:00 AM." },
-            { question: "What do you do in your free time?", answer: "I enjoy reading and watching movies." },
-            { question: "What kind of music do you like?", answer: "I like pop and rock music." },
-            { question: "How many languages do you speak?", answer: "I speak two languages: Portuguese and English." },
-            { question: "What is your job?", answer: "I am a software developer." },
-            { question: "Do you like to cook?", answer: "Yes, I love cooking Italian food." },
-            { question: "What is your favorite food?", answer: "My favorite food is pizza." },
-            { question: "Do you have brothers or sisters?", answer: "I have one brother." },
-            { question: "What is the weather like today?", answer: "It's sunny and warm today." },
-            { question: "What did you eat for breakfast?", answer: "I ate toast and drank coffee." },
-            { question: "Where did you go yesterday?", answer: "I went to the park." },
-            { question: "What is your favorite season?", answer: "My favorite season is summer." },
-            { question: "Do you prefer coffee or tea?", answer: "I prefer coffee, definitely." },
-            { question: "What is your favorite animal?", answer: "My favorite animal is the elephant." },
-            { question: "Can you play a musical instrument?", answer: "No, I cannot play an instrument." },
-            { question: "What is your favorite sport?", answer: "My favorite sport is basketball." },
-            { question: "How do you travel to work/school?", answer: "I take the bus." },
-            { question: "Do you like reading books?", answer: "Yes, I read every evening." },
-            { question: "What is your favorite movie?", answer: "My favorite movie is *The Godfather*." },
-            { question: "Do you like to travel?", answer: "Yes, I travel every year." },
-            { question: "What country do you want to visit?", answer: "I want to visit Japan." },
-            { question: "What time do you go to bed?", answer: "I go to bed around 11:00 PM." },
-            { question: "How often do you exercise?", answer: "I exercise three times a week." },
-            { question: "What is your phone number?", answer: "My number is 555-0101." },
-            { question: "What day is today?", answer: "Today is Wednesday." },
-            { question: "What is your mother's name?", answer: "My mother's name is Maria." },
-            { question: "What is the biggest city near you?", answer: "The biggest city near me is Belo Horizonte." },
-            { question: "Are you married?", answer: "No, I am single." },
-            { question: "What is your favorite time of day?", answer: "I love the early morning." },
-            { question: "Do you watch TV?", answer: "Sometimes, I watch the news." },
-            { question: "What is the last thing you bought?", answer: "I bought new running shoes." },
-            { question: "What is your hobby?", answer: "My hobby is painting." },
-            { question: "What is your address?", answer: "My address is 123 Main Street." },
-            { question: "What languages are you learning now?", answer: "I am learning Spanish." },
-            { question: "What is your favourite thing about your city?", answer: "I love the beaches here." },
-            { question: "Do you like shopping?", answer: "Not really, but I do it when necessary." },
-            { question: "What is your favorite holiday?", answer: "Christmas is my favorite holiday." },
-            { question: "How do you relax?", answer: "I relax by listening to music." },
-            { question: "What is your morning routine?", answer: "I drink coffee and check emails." },
-            { question: "Do you prefer mountains or the sea?", answer: "I prefer the sea." },
-            { question: "What is your biggest dream?", answer: "My biggest dream is to start my own business." },
-            { question: "What is your least favorite chore?", answer: "Washing dishes is my least favorite chore." },
-            { question: "What makes you happy?", answer: "Spending time with my friends makes me happy." },
-            { question: "What is your favorite type of book?", answer: "I enjoy science fiction novels." },
-            { question: "What do you do on weekends?", answer: "I often visit family or go hiking." },
-            { question: "Do you use social media often?", answer: "Yes, I check social media every day." },
-            { question: "What is your best friend's name?", answer: "My best friend's name is Alex." },
-            { question: "How was your day?", answer: "My day was good, thank you for asking." }
-        ];
-        let currentQuestionIndex = -1; // Começa em -1 para que a primeira chamada vá para o índice 0
-
-        // --- FUNÇÕES DE NAVEGAÇÃO ENTRE TELAS ---
-        function hideAllViews() {
-            splash1View.classList.add('hidden');
-            // splash2View removido
-            formView.classList.add('hidden');
-            practiceView.classList.add('hidden');
-            // resultView removido
+        if (item.isFact) {
+            explanationDiv.innerHTML = `<strong class="text-3xl font-bold block text-center text-green-600">FACT!</strong> <span class="block mt-2 text-center text-stone-700">${item.explanation}</span>`;
+            explanationDiv.className = 'mt-6 p-6 rounded-lg bg-green-50 border border-green-200';
+        } else {
+            explanationDiv.innerHTML = `<strong class="text-3xl font-bold block text-center text-red-600">FAKE!</strong> <span class="block mt-2 text-center text-stone-700">${item.explanation}</span>`;
+            explanationDiv.className = 'mt-6 p-6 rounded-lg bg-red-50 border border-red-200';
         }
 
-        // Função para aplicar as classes de fundo ao body
-        function setBodyBackground(viewId) {
-            document.body.classList.remove('bg-dark', 'bg-yellow', 'bg-white-practice', 'text-stone-100', 'text-stone-800');
-            
-            if (viewId === 'splash-1-view') {
-                document.body.classList.add('bg-dark', 'text-stone-100');
-            } else if (viewId === 'form-view') {
-                document.body.classList.add('bg-yellow', 'text-stone-800');
-            } else if (viewId === 'practice-view') {
-                document.body.classList.add('bg-white-practice', 'text-stone-800');
-            }
-        }
+        explanationDiv.classList.remove('hidden');
+        if (showAnswerBtn) showAnswerBtn.classList.add('hidden');
+        if (nextStatementBtn) nextStatementBtn.classList.remove('hidden');
+    }
 
-        function startSplash1() {
-            hideAllViews();
-            setBodyBackground('splash-1-view');
-            splash1View.classList.remove('hidden');
-        }
+    window.toggleStatus = function(button) {
+        playClickSound();
+        const states = ['NEUTRAL', 'TRUE', 'LIE'];
+        let currentState = button.textContent.trim();
+        let nextIndex = (states.indexOf(currentState) + 1) % states.length;
+        button.textContent = states[nextIndex];
+        button.style.backgroundColor = states[nextIndex] === 'TRUE' ? '#22c55e' : states[nextIndex] === 'LIE' ? '#ef4444' : '#e5e7eb';
+        button.style.color = states[nextIndex] === 'NEUTRAL' ? 'black' : 'white';
+    }
 
-        // goToSplash2 foi removida
-        
-        window.goToForm = function() {
-            hideAllViews();
-            setBodyBackground('form-view');
-            formView.classList.remove('hidden');
-        }
-        
-        // --- FUNÇÕES DE PRÁTICA CONVERSACIONAL ---
-
-        function startPractice() {
-            // Reseta o índice para -1 (A primeira chamada de displayQuestion irá para o índice 0)
-            currentQuestionIndex = -1; 
-            // Embaralha as perguntas para começar o ciclo
-            shuffleArray(practiceQuestions);
-            displayPracticeQuestion(); // Exibe a primeira pergunta
-        }
-
-        /**
-         * Função utilitária para embaralhar um array (algoritmo Fisher-Yates)
-         */
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        /**
-         * Exibe a próxima pergunta na ordem embaralhada, começando um novo ciclo se necessário.
-         */
-        window.displayPracticeQuestion = function() {
-            // Se o índice for o último, reinicia o ciclo e re-embaralha
-            if (currentQuestionIndex >= practiceQuestions.length - 1) {
-                shuffleArray(practiceQuestions);
-                currentQuestionIndex = 0;
-            } else {
-                // Avança para a próxima pergunta na ordem embaralhada
-                currentQuestionIndex++;
-            }
-
-            const questionData = practiceQuestions[currentQuestionIndex];
-            
-            document.getElementById('current-question').textContent = questionData.question;
-            document.getElementById('possible-answer-text').textContent = questionData.answer;
-            document.getElementById('generate-button').textContent = "Gerar Próxima Pergunta →";
-
-            // Esconde a resposta ao gerar a próxima pergunta
-            toggleAnswer(false);
-        }
-
-        /**
-         * Mostra ou esconde a resposta possível.
-         */
-        window.toggleAnswer = function(show) {
-            const answerBox = document.getElementById('possible-answer-box');
-            const showButton = document.getElementById('show-answer-btn');
-            
-            if (show) {
-                answerBox.classList.remove('hidden');
-                showButton.textContent = "Resposta à Vista!";
-                showButton.disabled = true;
-                showButton.classList.remove('hover:bg-stone-900', 'bg-stone-800');
-                showButton.classList.add('bg-stone-500', 'cursor-default');
-            } else {
-                answerBox.classList.add('hidden');
-                showButton.textContent = "Ver Possível Resposta";
-                showButton.disabled = false;
-                showButton.classList.add('hover:bg-stone-900', 'bg-stone-800');
-                showButton.classList.remove('bg-stone-500', 'cursor-default');
-            }
-        }
-        
-        // --- EVENTO DE ENVIO DO FORMULÁRIO (INICIA A PRÁTICA E CAPTURA O LEAD) ---
-        leadForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // 1. Armazena os dados do utilizador
-            studentName = document.getElementById('name').value;
-            studentEmail = document.getElementById('email').value;
-            studentWhatsapp = document.getElementById('whatsapp').value;
-
-            // 2. Envia os dados para o Formspree usando FormData (o Formspree lida melhor com isso)
-            const submissionData = new FormData(leadForm);
-            
-            // Inicia a transição para a tela de prática IMEDIATAMENTE.
-            // O Formspree fetch continua em segundo plano.
-            formView.classList.add('hidden');
-            setBodyBackground('practice-view');
-            practiceView.classList.remove('hidden');
-            startPractice(); // Inicia a interface de prática
-
-            fetch(leadForm.action, {
-                method: 'POST',
-                // Usamos o FormData diretamente, o que é mais robusto para CORS em alguns ambientes.
-                // O Content-Type é definido automaticamente pelo FormData se não definirmos.
-                body: submissionData,
-                headers: { 
-                    'Accept': 'application/json' 
-                    // Removendo o Content-Type para permitir que FormData o defina corretamente com boundary.
-                }
-            }).then(response => {
-                if (response.ok) {
-                    console.log("Dados do lead enviados com sucesso para o Formspree.");
-                } else {
-                    // MUDANÇA AQUI: Mostra o status do erro HTTP
-                    console.error(`Houve um problema ao enviar o lead para o Formspree. Status: ${response.status} (${response.statusText}). Verifique a ativação do formulário Formspree.`);
-                }
-            }).catch(error => {
-                // MUDANÇA AQUI: Mensagem de erro de rede
-                console.error("Erro de conexão ou rede ao enviar o lead:", error);
-            });
+    function setupDragAndDrop() {
+        const list = document.getElementById('ranking-list');
+        if (!list) return;
+        let draggedItem = null;
+        list.addEventListener('dragstart', (e) => {
+            draggedItem = e.target.closest('.ranking-item-styled');
+            setTimeout(() => {
+                if(draggedItem) draggedItem.classList.add('dragging');
+            }, 0);
         });
+        list.addEventListener('dragend', (e) => {
+            if (draggedItem) draggedItem.classList.remove('dragging');
+        });
+        list.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(list, e.clientY);
+            if (draggedItem) {
+                if (afterElement == null) {
+                    list.appendChild(draggedItem);
+                } else {
+                    list.insertBefore(draggedItem, afterElement);
+                }
+            }
+        });
+    }
+    
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.ranking-item-styled:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
 
-        // --- INICIA O FLUXO NO PRIMEIRO SPLASH SCREEN ---
-        window.onload = startSplash1;
-    </script>
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('main-wrapper').classList.add('hidden');
+        loginGate.style.display = 'flex';
+    });
+</script>
 </body>
 </html>
+
